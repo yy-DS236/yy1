@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特别的告白</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #app {
+            text-align: center;
+        }
+        #dialogue-box {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        #game-input {
+            font-size: 18px;
+            padding: 5px;
+        }
+        #submit-btn {
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        #fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #final-question {
+            font-size: 28px;
+            margin: 20px 0;
+        }
+        .choice-btn {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 0 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+</head>
+<body>
+    <div id="app">
+        <div id="image-container"></div>
+        <div id="dialogue-box"></div>
+        <div id="game-container" style="display: none;">
+            <input type="text" id="game-input" placeholder="请输入...">
+            <button id="submit-btn">提交</button>
+        </div>
+        <div id="fireworks"></div>
+        <div id="video-container" style="display: none;">
+            <video id="my-video" width="640" height="360" controls style="display: none;">
+                <source src="屏幕录制 .mp4" type="video/mp4">
+                您的浏览器不支持 video 标签。
+            </video>
+        </div>
+        <div id="final-question" style="display: none;">
+            做我女朋友你愿意吗？
+            <br><br>
+            <button class="choice-btn" id="accept-btn">接受</button>
+            <button class="choice-btn" id="reject-btn">拒绝</button>
+        </div>
+        <div id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = ['1.jpeg', '2.jpeg', '3.jpeg']; // 替换为实际的图片文件名
+            const dialogues = ['你好,我有话要说,很高兴你看到这封对白，我希望遇见你的每天我都很开心', '我们认识很久了，我希望每天我们都能开心快乐', '我想告诉你，I love you，正确答案是我喜欢你，故意答错别逼我扇你'];
+            let currentStep = 0;
+
+            function showImage(index) {
+                document.getElementById('image-container').innerHTML = `<img src="${images[index]}" alt="漫画图片">`;
+            }
+
+            function showDialogue(text) {
+                document.getElementById('dialogue-box').textContent = text;
+            }
+
+            function nextStep() {
+                if (currentStep < images.length) {
+                    showImage(currentStep);
+                    showDialogue(dialogues[currentStep]);
+                    currentStep++;
+                } else {
+                    startGame();
+                }
+            }
+
+            function startGame() {
+                document.getElementById('game-container').style.display = 'block';
+            }
+
+            function checkAnswer() {
+    const answer = document.getElementById('game-input').value;
+    if (answer === '我喜欢你') {
+        showFireworks();
+    } else {
+        alert('再试一次吧!');
+    }
+}
+
+
+            function showFireworks() {
+    const duration = 10 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            playVideo();
+            return;
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, { 
+            particleCount, 
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } 
+        }));
+        confetti(Object.assign({}, defaults, { 
+            particleCount, 
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } 
+        }));
+    }, 250);
+}
+
+
+            function playVideo() {
+                const videoContainer = document.getElementById('video-container');
+                const video = document.getElementById('my-video');
+                videoContainer.style.display = 'block';
+                video.style.display = 'block';
+                video.play();
+                video.onended = showFinalQuestion;
+            }
+
+            function showFinalQuestion() {
+                document.getElementById('video-container').style.display = 'none';
+                document.getElementById('final-question').style.display = 'block';
+            }
+
+            function showResult(accepted) {
+                document.getElementById('final-question').style.display = 'none';
+                const result = document.getElementById('result');
+                result.style.display = 'block';
+                result.textContent = accepted ? '不可能的，死了这条心' : '坚决不可能，这条心死一万次';
+            }
+
+            // 初始化
+            nextStep();
+
+            // 添加事件监听器
+            document.body.addEventListener('click', nextStep);
+            document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+            document.getElementById('accept-btn').addEventListener('click', () => showResult(true));
+            document.getElementById('reject-btn').addEventListener('click', () => showResult(false));
+        });
+    </script>
+</body>
+</html>
